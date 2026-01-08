@@ -6,7 +6,7 @@
 extern int **A, **B, n;
 
 typedef struct {
-  blockLocation *thisBlock;
+  blockLocation thisBlock;
 } ThreadArg;
 
 #endif // MAIN_H
