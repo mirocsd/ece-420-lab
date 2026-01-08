@@ -30,12 +30,14 @@ int main(int argc, char* argv[]) {
     GET_TIME(start_time);
     double start, end;
     for (thread = 0; thread < p; thread++) {
-        int x = floor(thread/sqrt(p));
-        int y = thread % (int) sqrt(p);
-        int first_row = (n/sqrt(p))*x;
-        int last_row = (n/sqrt(p))*(x+1);
-        int first_column = (n/sqrt(p))*y;
-        int last_column = (n/sqrt(p))*(y+1);
+        ThreadArg arg;
+        blockLocation *thisBlock = &(arg.thisBlock);
+        thisBlock->row = floor(thread/sqrt(p));
+        thisBlock->col = thread % (int) sqrt(p);
+        thisBlock->minRow = (n/sqrt(p))*thisBlock->row;
+        thisBlock->maxRow = (n/sqrt(p))*(thisBlock->row+1);
+        thisBlock->minCol = (n/sqrt(p))*thisBlock->col;
+        thisBlock->maxCol = (n/sqrt(p))*(thisBlock->col+1);
         pthread_create(&thread_handles[thread], NULL, Pth_mat_mat(), (void*) thread);
     }
         
