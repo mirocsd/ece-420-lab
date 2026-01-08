@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <math.h>
+<<<<<<< HEAD
 #include <time.h>
 
 #include "lab1_IO.h"
@@ -11,6 +12,11 @@
 
 extern int **A, **B, **C, n;
 extern int p;
+=======
+#include "timer.h"
+#include "lab1_IO.h"
+#include "main.h"
+#include "multiply.h"
 
 int main(int argc, char* argv[]) {
     p = argv[1]; //argv[1] is the number of threads
@@ -18,6 +24,7 @@ int main(int argc, char* argv[]) {
     pthread_t* thread_handles;
     double start_time, end_time;
     thread_handles = malloc(p*sizeof(pthread_t));
+    int **A, **B, n;
     Lab1_loadinput(&A, &B, &n);
 
     // Creating Matrix C
