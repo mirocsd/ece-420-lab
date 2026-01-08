@@ -18,11 +18,10 @@ int main(int argc, char* argv[]) {
     pthread_t* thread_handles;
     double start_time, end_time;
     thread_handles = malloc(p*sizeof(pthread_t));
-    int **A, **B, n;
     Lab1_loadinput(&A, &B, &n);
 
     // Creating Matrix C
-    int **C = malloc(n * sizeof(int *));
+    **C = malloc(n * sizeof(int *));
     for (int i = 0; i < n; i++) {
         C[i] = malloc(n * sizeof(int));
     }
