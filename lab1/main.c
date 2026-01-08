@@ -2,9 +2,10 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <math.h>
-#include <time.h>
+#include "timer.h"
 #include "lab1_IO.h"
 #include "main.h"
+#include "multiply.h"
 
 int main(int argc, char* argv[]) {
     int p = argv[1]; //argv[1] is the number of threads
@@ -12,7 +13,7 @@ int main(int argc, char* argv[]) {
     pthread_t* thread_handles;
     thread_handles = malloc(p*sizeof(pthread_t));
     int **A, **B, n;
-    Lab1_loadinput(int &A, int &B, int &n);
+    Lab1_loadinput(&A, &B, &n);
 
     // Creating Matrix C
     int **C = malloc(n * sizeof(int *));
@@ -22,11 +23,11 @@ int main(int argc, char* argv[]) {
 
     for (thread = 0; thread < p; thread++)
         pthread_create(&thread_handles[thread], NULL,
-            Pth_mat_mat, (void*) thread);
+            Pth_mat_mat(), (void*) thread);
     for (thread = 0; thread < p; thread++)
         pthread_join(thread_handles[thread], NULL);
 
-    Lab1_saveoutput(&C, n, double Time)
+    Lab1_saveoutput(&C, n, double Time);
 
     int x = floor(k/sqrt(p));
     int y = k%sqrt(p);
