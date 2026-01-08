@@ -3,8 +3,9 @@
 
 #include "multiply.h"
 
+extern int **A, **B, n;
 
-typdef struct {
+typedef struct {
   blockLocation *thisBlock;
 } ThreadArg;
 

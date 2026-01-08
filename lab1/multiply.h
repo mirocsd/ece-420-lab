@@ -10,4 +10,6 @@ typedef struct {
   int maxCol;
 } blockLocation;
 
+ void *pthr_matbymat(void *arg);
+
 #endif // MULTIPLY_H
