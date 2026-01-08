@@ -1,3 +1,13 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+int main(int argc, char* argv[]) {
+    //argv[1] is the number of threads
+
+
+}
+
 /*------------------------------------------------------------------
 * Function: Pth_mat_mat
 * Purpose: Multiply an nxn matrix by an nxn matrix
