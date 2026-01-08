@@ -28,25 +28,27 @@ int main(int argc, char* argv[]) {
     
     GET_TIME(start_time);
 
+    //start time
     for (thread = 0; thread < p; thread++) {
-      
-      pthread_create(&thread_handles[thread], NULL,
-                     pthr_matbymat, (void*) thread);
-        
+        int x = floor(thread/sqrt(p));
+        int y = thread % (int) sqrt(p);
+        int first_row = (n/sqrt(p))*x;
+        int last_row = (n/sqrt(p))*(x+1);
+        int first_column = (n/sqrt(p))*y;
+        int last_column = (n/sqrt(p))*(y+1);
+        pthread_create(&thread_handles[thread], NULL, Pth_mat_mat(), (void*) thread);
     }
-    for (thread = 0; thread < p; thread++)
+        
+    for (thread = 0; thread < p; thread++) {
         pthread_join(thread_handles[thread], NULL);
+    }
+        
+    //end time
 
+    //calculate time diff
     GET_TIME(end_time);
 
-    Lab1_saveoutput(&C, n, double Time)
-
-    int x = floor(k/sqrt(p));
-    int y = k%sqrt(p);
-    int first_row = (n/sqrt(p))*x;
-    int last_row = (n/sqrt(p))*(x+1);
-    int first_column = (n/sqrt(p))*y;
-    int last_column = (n/sqrt(p))*(y+1);
+    //Lab1_saveoutput(&C, n, double Time);
 
     free(A);
     free(B);
