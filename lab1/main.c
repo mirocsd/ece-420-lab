@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <math.h>
+
+#include "main.h"
 
 int main(int argc, char* argv[]) {
     //argv[1] is the number of threads
@@ -24,4 +27,14 @@ void *Pth_mat_mat(void* rank) {
 		C[row][column] += A[row][i]*B[i][column];
 	}
 	return NULL;
+}
+
+/* rank is the rank of this thread, or k in the formula given */
+void *pthr_matbymat(void *rank)
+{
+  blockLocation thisBlock;
+  long my_rank = (long) rank;
+  thisBlock.row = math.floor(my_rank/math.sqrt(p));
+  thisBlock.col = my_rank % math.sqrt(p);
+
 }
