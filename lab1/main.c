@@ -26,9 +26,9 @@ int main(int argc, char* argv[]) {
         C[i] = malloc(n * sizeof(int));
     }
     
-    GET_TIME(start_time);
-
     //start time
+    GET_TIME(start_time);
+    double start, end;
     for (thread = 0; thread < p; thread++) {
         int x = floor(thread/sqrt(p));
         int y = thread % (int) sqrt(p);
@@ -44,11 +44,11 @@ int main(int argc, char* argv[]) {
     }
         
     //end time
-
-    //calculate time diff
     GET_TIME(end_time);
 
-    //Lab1_saveoutput(&C, n, double Time);
+    double Time = end_time - start_time;
+
+    Lab1_saveoutput(&C, n, Time);
 
     free(A);
     free(B);
