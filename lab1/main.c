@@ -2,24 +2,31 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <math.h>
-#include "timer.h"
+#include <time.h>
+
 #include "lab1_IO.h"
 #include "main.h"
+#include "timer.h"
 #include "multiply.h"
 
+extern int **A, **B, **C, n;
+extern int p;
+
 int main(int argc, char* argv[]) {
-    int p = argv[1]; //argv[1] is the number of threads
+    p = argv[1]; //argv[1] is the number of threads
     long thread;
     pthread_t* thread_handles;
+    double start_time, end_time;
     thread_handles = malloc(p*sizeof(pthread_t));
-    int **A, **B, n;
     Lab1_loadinput(&A, &B, &n);
 
     // Creating Matrix C
-    int **C = malloc(n * sizeof(int *));
+    **C = malloc(n * sizeof(int *));
     for (int i = 0; i < n; i++) {
         C[i] = malloc(n * sizeof(int));
     }
+    
+    GET_TIME(start_time);
 
     //start time
     for (thread = 0; thread < p; thread++) {
@@ -39,6 +46,7 @@ int main(int argc, char* argv[]) {
     //end time
 
     //calculate time diff
+    GET_TIME(end_time);
 
     //Lab1_saveoutput(&C, n, double Time);
 
