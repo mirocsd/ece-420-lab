@@ -4,7 +4,7 @@ OBJS		:= $(SRCS:.c=.o)
 
 CC			?= gcc
 CFLAGS	?= -g -Wall -Wextra
-LDFLAGS ?= -lpthread -lc
+LDFLAGS ?= -lpthread -lc -lm
 .PHONY: all clean
 
 all: $(TARGET)
