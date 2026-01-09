@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <math.h>
@@ -54,7 +53,6 @@ int main(int argc, char* argv[]) {
         args[thread].thisBlock->maxRow = ((int)(n/root_p))*(args[thread].thisBlock->row+1);
         args[thread].thisBlock->minCol = ((int)(n/root_p))*(args[thread].thisBlock->col);
         args[thread].thisBlock->maxCol = ((int)(n/root_p))*(args[thread].thisBlock->col+1);
-        printf("minRow: %d, maxRow: %d, minCol: %d, maxCol: %d", args[thread].thisBlock->minRow, args[thread].thisBlock->maxRow, args[thread].thisBlock->minCol, args[thread].thisBlock->maxCol);
         pthread_create(&thread_handles[thread], NULL, thr_matbymat, (void*)&args[thread]);
     }
         

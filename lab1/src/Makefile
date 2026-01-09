@@ -10,7 +10,7 @@ LDFLAGS ?= -lpthread -lc -lm
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $(OBJS)
+	$(CC) -o $@ $(OBJS) $(LDFLAGS)
 
 %.o: $.c
 	$(CC) $(CFLAGS) -c $< -o $@
