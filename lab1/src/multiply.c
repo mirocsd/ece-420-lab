@@ -12,15 +12,13 @@ void *thr_matbymat(void *arg)
   blockLocation *thisBlock = ((ThreadArg *)arg)->thisBlock;
 
   int i, j;
-  long long sum;
+  int sum;
   for (i = thisBlock->minRow; i < thisBlock->maxRow; i++)
     for (j = thisBlock->minCol; j < thisBlock->maxCol; j++) {
       sum = 0;
-
       for (int k = 0; k < n; k++)
-        sum += (long long) (A[i][k]) * (B[k][j]);
-
-      C[i][j] = (int)sum;
+        sum += (A[i][k]) * (B[k][j]);
+      C[i][j] = sum;
     }
   return NULL;
 }
