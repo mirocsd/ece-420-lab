@@ -1,4 +1,5 @@
 #include "common.h"
+#include "server.h"
 #include "threadpool.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -9,6 +10,7 @@
 pthread_mutex_t *mutexes;
 pthread_mutex_t work_mutex;
 pthread_cond_t work_ready;
+struct Work *workHead;
 
 static void *thread_start(void *threadArg);
 
@@ -17,13 +19,18 @@ int main(int argc, char **argv) {
   char server_ip[20];
   uint8_t server_port;
   pthread_t threads[COM_NUM_REQUEST];
+  struct Work *workTail;
 
-  if (argc != 4)
+  if (argc != 4) {
     printf("Error: Not enough input arguments");
+    return 0;
+  }
 
   num_positions = atoi(argv[1]);
   strcpy(argv[2], server_ip);
   server_port = atoi(argv[3]);
+
+  workHead = malloc(sizeof(struct Work));
 
   pthread_mutex_init(&work_mutex, NULL);
 
@@ -39,15 +46,18 @@ int main(int argc, char **argv) {
     pthread_create(&threads[i], NULL, thread_start, (void*)NULL);
   }
 
+  /* process server requests, update linked list, notify threads that work is ready */
+
 }
 
 static void* thread_start(void *threadArg)
 {
   (void)threadArg;
 
+  pthread_mutex_lock(&work_mutex);
+  pthread_cond_wait(&work_ready, &work_mutex);
 
-
-
-
+  struct Work *thisWork;
+  thisWork = workHead;
   return NULL;
 }
