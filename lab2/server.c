@@ -20,6 +20,8 @@ int main(int argc, char **argv) {
   uint8_t server_port;
   pthread_t threads[COM_NUM_REQUEST];
   struct Work *workTail;
+  char *initialMessage = "String %d: the initial value";
+  char **theArray;
 
   if (argc != 4) {
     printf("Error: Not enough input arguments");
@@ -29,6 +31,14 @@ int main(int argc, char **argv) {
   num_positions = atoi(argv[1]);
   strcpy(argv[2], server_ip);
   server_port = atoi(argv[3]);
+
+  theArray = (char**) malloc(num_positions * sizeof(char*));
+  for (int i = 0; i < num_positions; i ++) 
+  {
+      theArray[i] = (char*) malloc(strlen(initialMessage) * sizeof(char) + 3);
+      sprintf(theArray[i], initialMessage, i);
+  }
+
 
   workHead = malloc(sizeof(struct Work));
 
