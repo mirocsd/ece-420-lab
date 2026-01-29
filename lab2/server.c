@@ -70,6 +70,7 @@ int main(int argc, char **argv) {
         pthread_create(&threads[i], NULL, thread_start, (void*)&current_request);
       }
     }
+  }
 
 
 
@@ -77,12 +78,9 @@ int main(int argc, char **argv) {
 
 static void* thread_start(void *threadArg)
 {
-  (void)threadArg;
-
+  (ClientRequest*)threadArg;
   pthread_mutex_lock(&work_mutex);
   pthread_cond_wait(&work_ready, &work_mutex);
-
-  struct Work *thisWork;
-  thisWork = workHead;
+  
   return NULL;
 }
