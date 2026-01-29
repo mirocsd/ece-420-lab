@@ -5,23 +5,28 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <pthread.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
 
 
 pthread_mutex_t *mutexes;
-pthread_mutex_t work_mutex;
-pthread_cond_t work_ready;
-struct Work *workHead;
-
+#define MESSAGE_LEN = 100;
 static void *thread_start(void *threadArg);
 
 int main(int argc, char **argv) {
   int num_positions;
   char server_ip[20];
-  uint8_t server_port;
+  uint16_t server_port;
   pthread_t threads[COM_NUM_REQUEST];
-  struct Work *workTail;
   char *initialMessage = "String %d: the initial value";
   char **theArray;
+  struct sockaddr_in sock_var;
+  int serverfd = socket(AF_INET, SOCK_STREAM, 0);
+  int clientfd;
+  struct Work current_work;
+  char current_line[MESSAGE_LEN];
 
   if (argc != 4) {
     printf("Error: Not enough input arguments");
@@ -39,24 +44,32 @@ int main(int argc, char **argv) {
       sprintf(theArray[i], initialMessage, i);
   }
 
-
-  workHead = malloc(sizeof(struct Work));
-
-  pthread_mutex_init(&work_mutex, NULL);
-
-  pthread_cond_init(&work_ready, NULL);
-
   mutexes = malloc(num_positions * sizeof(pthread_mutex_t));
 
   for (int i = 0; i < COM_NUM_REQUEST; i++)
     pthread_mutex_init(&(mutexes[i]), NULL);
 
-  for (int i = 0; i < COM_NUM_REQUEST; i++)
-  {
-    pthread_create(&threads[i], NULL, thread_start, (void*)NULL);
-  }
-
   /* process server requests, update linked list, notify threads that work is ready */
+  sock_var.sin_addr.s_addr = inet_addr(server_ip);
+  sock_var.sin_port=htons((int)server_port);
+  sock_var.sin_family=AF_INET;
+
+  if (bind(serverfd, (struct sockaddr*)&sock_var, sizeof(sock_var)) >= 0)
+  {
+    while (1)
+    {
+      for (int i = 0; i < COM_NUM_REQUEST; i++)
+      {
+        clientfd = accept(serverfd, NULL, NULL);
+        current_work.fd = clientfd;
+
+        current_line = read(clientfd, current_line, MESSAGE_LEN);
+
+        pthread_create(&threads[i], NULL, thread_start, (void*)&current_work);
+      }
+    }
+
+
 
 }
 
