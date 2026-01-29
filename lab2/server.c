@@ -12,8 +12,10 @@
 
 
 pthread_mutex_t *mutexes;
-static int MESSAGE_LEN = 100;
+char **theArray;
 static void *thread_start(void *threadArg);
+int serverfd;
+int clientfd;
 
 int main(int argc, char **argv) {
   int num_positions;
@@ -21,12 +23,10 @@ int main(int argc, char **argv) {
   uint16_t server_port;
   pthread_t threads[COM_NUM_REQUEST];
   char *initialMessage = "String %d: the initial value";
-  char **theArray;
   struct sockaddr_in sock_var;
-  int serverfd = socket(AF_INET, SOCK_STREAM, 0);
-  int clientfd;
+  serverfd = socket(AF_INET, SOCK_STREAM, 0);
   struct Work current_work;
-  char current_line[MESSAGE_LEN];
+  char current_line[COM_BUFF_SIZE];
   ClientRequest current_request;
 
   if (argc != 4) {
@@ -63,11 +63,13 @@ int main(int argc, char **argv) {
       {
         clientfd = accept(serverfd, NULL, NULL);
         current_work.fd = clientfd;
+        if (clientfd >= 0) 
+        {
+          read(clientfd, current_line, COM_BUFF_SIZE);
+          ParseMsg(current_line, &current_request);
 
-        read(clientfd, current_line, MESSAGE_LEN);
-        ParseMsg(current_line, &current_request);
-
-        pthread_create(&threads[i], NULL, thread_start, (void*)&current_request);
+          pthread_create(&threads[i], NULL, thread_start, (void*)&current_request);
+        }
       }
     }
   }
@@ -78,9 +80,22 @@ int main(int argc, char **argv) {
 
 static void* thread_start(void *threadArg)
 {
-  (ClientRequest*)threadArg;
-  pthread_mutex_lock(&work_mutex);
-  pthread_cond_wait(&work_ready, &work_mutex);
+  ClientRequest *requestArgs = (ClientRequest*)threadArg;
+  char result[COM_BUFF_SIZE];
   
+  if (requestArgs->is_read == 1)
+  {
+    pthread_mutex_lock(&mutexes[requestArgs->pos]);
+    getContent(result, requestArgs->pos, theArray);
+    write(clientfd, result, COM_BUFF_SIZE);
+  }
+  else
+  {
+    pthread_mutex_lock(&mutexes[requestArgs->pos]);
+    setContent(requestArgs->msg, requestArgs->pos, theArray);
+  }
+
+  pthread_mutex_unlock(&mutexes[requestArgs->pos]);
+
   return NULL;
 }

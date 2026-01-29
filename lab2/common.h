@@ -2,6 +2,8 @@
 #define LAB2_COMMON_H_
 #include<string.h>
 #include<unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /* Important parameters */
 // Change these if needed
