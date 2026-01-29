@@ -12,6 +12,7 @@ int main(int argc, char **argv) {
   int num_positions;
   char server_ip[20];
   uint8_t server_port;
+  pthread_t threads[COM_NUM_REQUEST];
 
   if (argc != 4)
     printf("Error: Not enough input arguments");
@@ -28,5 +29,7 @@ int main(int argc, char **argv) {
   for (int i = 0; i < COM_NUM_REQUEST; i++)
     pthread_mutex_init(&(mutexes[i]), NULL);
 
-  
+  for (int i = 0; i < COM_NUM_REQUEST; i++)
+  {
+    pthread_create(threads[i], NULL, 
 }
