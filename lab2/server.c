@@ -12,7 +12,7 @@
 
 
 pthread_mutex_t *mutexes;
-#define MESSAGE_LEN = 100;
+static int MESSAGE_LEN = 100;
 static void *thread_start(void *threadArg);
 
 int main(int argc, char **argv) {
