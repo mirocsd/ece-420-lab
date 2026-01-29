@@ -27,6 +27,7 @@ int main(int argc, char **argv) {
   int clientfd;
   struct Work current_work;
   char current_line[MESSAGE_LEN];
+  ClientRequest current_request;
 
   if (argc != 4) {
     printf("Error: Not enough input arguments");
@@ -63,9 +64,10 @@ int main(int argc, char **argv) {
         clientfd = accept(serverfd, NULL, NULL);
         current_work.fd = clientfd;
 
-        current_line = read(clientfd, current_line, MESSAGE_LEN);
+        read(clientfd, current_line, MESSAGE_LEN);
+        ParseMsg(current_line, &current_request);
 
-        pthread_create(&threads[i], NULL, thread_start, (void*)&current_work);
+        pthread_create(&threads[i], NULL, thread_start, (void*)&current_request);
       }
     }
 
