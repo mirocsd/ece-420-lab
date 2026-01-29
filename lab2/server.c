@@ -7,6 +7,10 @@
 
 
 pthread_mutex_t *mutexes;
+pthread_mutex_t work_mutex;
+pthread_cond_t work_ready;
+
+static void *thread_start(void *threadArg);
 
 int main(int argc, char **argv) {
   int num_positions;
@@ -21,7 +25,8 @@ int main(int argc, char **argv) {
   strcpy(argv[2], server_ip);
   server_port = atoi(argv[3]);
 
-  pthread_cond_t work_ready;
+  pthread_mutex_init(&work_mutex, NULL);
+
   pthread_cond_init(&work_ready, NULL);
 
   mutexes = malloc(num_positions * sizeof(pthread_mutex_t));
@@ -31,5 +36,18 @@ int main(int argc, char **argv) {
 
   for (int i = 0; i < COM_NUM_REQUEST; i++)
   {
-    pthread_create(threads[i], NULL, 
+    pthread_create(&threads[i], NULL, thread_start, (void*)NULL);
+  }
+
+}
+
+static void* thread_start(void *threadArg)
+{
+  (void)threadArg;
+
+
+
+
+
+  return NULL;
 }
