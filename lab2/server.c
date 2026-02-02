@@ -16,6 +16,7 @@ typedef struct {
 
 pthread_mutex_t *mutexes;
 char **theArray;
+double *timeArray;
 static void *thread_start(void *threadArg);
 int serverfd;
 int clientfd[COM_NUM_REQUEST];
@@ -40,6 +41,7 @@ int main(int argc, char **argv) {
   strncpy(server_ip, argv[2], 20);
   server_port = atoi(argv[3]);
 
+  timeArray = malloc(num_positions * sizeof(double*));
 
   theArray = (char**) malloc(num_positions * sizeof(char*));
   for (int i = 0; i < num_positions; i ++) 
@@ -80,7 +82,7 @@ int main(int argc, char **argv) {
     printf("Error: Failed to bind socket");
     return 0;
   }
-
+  saveTimes(timeArray, num_positions);
 
 }
 
@@ -88,7 +90,8 @@ static void* thread_start(void *threadArg)
 {
   threadArgs *requestArgs = (threadArgs*)threadArg;
   char result[COM_BUFF_SIZE];
-  
+  double start_time, end_time, total_time;
+  GET_TIME(start_time);
   if (requestArgs->current_request.is_read == 1)
   {
     pthread_mutex_lock(&mutexes[requestArgs->current_request.pos]);
@@ -102,7 +105,9 @@ static void* thread_start(void *threadArg)
     getContent(result, requestArgs->current_request.pos, theArray);
     write(requestArgs->clientfd, result, COM_BUFF_SIZE);
   }
-
+  GET_TIME(end_time);
+  total_time = end_time - start_time;
+  timeArray[pos] = total_time;
   pthread_mutex_unlock(&mutexes[requestArgs->current_request.pos]);
 
   free(requestArgs);
