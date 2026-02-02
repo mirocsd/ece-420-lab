@@ -1,4 +1,5 @@
 #include "common.h"
+#include "timer.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -77,12 +78,16 @@ int main(int argc, char **argv) {
         arg->current_request = current_request;
         arg->clientfd = clientfd[i];
         pthread_create(&threads[i], NULL, thread_start, (void*)arg);
+
+        if (timeArrayIndex >= COM_NUM_REQUEST) {
+          saveTimes(timeArray, COM_NUM_REQUEST);
+          timeArrayIndex = 0;
+        }
       }
 
-      if (timeArrayIndex >= COM_NUM_REQUEST) {
-        saveTimes(timeArray, COM_NUM_REQUEST);
-        timeArrayIndex = 0;
-      }
+      for (int i = 0; i < COM_NUM_REQUEST; i++) {
+        pthread_join(threads[i], NULL);
+      } 
     }
   }
   else
