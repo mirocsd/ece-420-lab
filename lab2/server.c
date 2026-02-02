@@ -1,6 +1,6 @@
 #include "common.h"
-#include "server.h"
-#include "threadpool.h"
+// #include "server.h"
+// #include "threadpool.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
   char initialMessage[30] = "String %d: the initial value";
   struct sockaddr_in sock_var;
   serverfd = socket(AF_INET, SOCK_STREAM, 0);
-  struct Work current_work;
+  // struct Work current_work;
   char current_line[COM_BUFF_SIZE];
   ClientRequest current_request;
 
@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
   theArray = (char**) malloc(num_positions * sizeof(char*));
   for (int i = 0; i < num_positions; i ++) 
   {
-      theArray[i] = (char*) malloc(strlen(initialMessage) * sizeof(char) + 3);
+      theArray[i] = (char*) malloc(COM_BUFF_SIZE * sizeof(char));
       sprintf(theArray[i], initialMessage, i);
   }
 
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
   sock_var.sin_addr.s_addr = inet_addr(server_ip);
   sock_var.sin_port=(int)server_port;
   sock_var.sin_family=AF_INET;
-
+  threadArgs thisArg;
   if (bind(serverfd, (struct sockaddr*)&sock_var, sizeof(sock_var)) >= 0)
   {
     listen(serverfd, 2000);
@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
         clientfd[i] = accept(serverfd, NULL, NULL);
         read(clientfd[i], current_line, COM_BUFF_SIZE);
         ParseMsg(current_line, &current_request);
-        threadArgs thisArg;
+        
         thisArg.current_request = current_request;
         thisArg.clientfd = clientfd[i];
 
