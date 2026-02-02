@@ -1,4 +1,5 @@
 #include "common.h"
+#include "timer.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -75,6 +76,7 @@ int main(int argc, char **argv) {
         arg->clientfd = clientfd[i];
         pthread_create(&threads[i], NULL, thread_start, (void*)arg);
       }
+      saveTimes(timeArray, num_positions);
     }
   }
   else
@@ -82,7 +84,6 @@ int main(int argc, char **argv) {
     printf("Error: Failed to bind socket");
     return 0;
   }
-  saveTimes(timeArray, num_positions);
 
 }
 
@@ -107,7 +108,7 @@ static void* thread_start(void *threadArg)
   }
   GET_TIME(end_time);
   total_time = end_time - start_time;
-  timeArray[pos] = total_time;
+  timeArray[requestArgs->current_request.pos] = total_time;
   pthread_mutex_unlock(&mutexes[requestArgs->current_request.pos]);
 
   free(requestArgs);
