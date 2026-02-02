@@ -78,11 +78,11 @@ int main(int argc, char **argv) {
         arg->clientfd = clientfd[i];
         pthread_create(&threads[i], NULL, thread_start, (void*)arg);
       }
-      
-      for (int i = 0; i < COM_NUM_REQUEST; i++) {
-        pthread_join(threads[i], NULL);
-      } 
-      saveTimes(timeArray, COM_NUM_REQUEST);
+
+      if (timeArrayIndex >= COM_NUM_REQUEST) {
+        saveTimes(timeArray, COM_NUM_REQUEST);
+        timeArrayIndex = 0;
+      }
     }
   }
   else
