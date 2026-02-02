@@ -1,5 +1,4 @@
 #include "common.h"
-#include "timer.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -16,11 +15,14 @@ typedef struct {
 
 
 pthread_mutex_t *mutexes;
+pthread_mutex_t time_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 char **theArray;
 double *timeArray;
 static void *thread_start(void *threadArg);
 int serverfd;
 int clientfd[COM_NUM_REQUEST];
+int timeArrayIndex = 0;
 
 int main(int argc, char **argv) {
   int num_positions;
@@ -42,7 +44,7 @@ int main(int argc, char **argv) {
   strncpy(server_ip, argv[2], 20);
   server_port = atoi(argv[3]);
 
-  timeArray = malloc(num_positions * sizeof(double*));
+  timeArray = malloc(COM_NUM_REQUEST * sizeof(double));
 
   theArray = (char**) malloc(num_positions * sizeof(char*));
   for (int i = 0; i < num_positions; i ++) 
@@ -76,7 +78,11 @@ int main(int argc, char **argv) {
         arg->clientfd = clientfd[i];
         pthread_create(&threads[i], NULL, thread_start, (void*)arg);
       }
-      saveTimes(timeArray, num_positions);
+      
+      for (int i = 0; i < COM_NUM_REQUEST; i++) {
+        pthread_join(threads[i], NULL);
+      } 
+      saveTimes(timeArray, COM_NUM_REQUEST);
     }
   }
   else
@@ -84,6 +90,7 @@ int main(int argc, char **argv) {
     printf("Error: Failed to bind socket");
     return 0;
   }
+
 
 }
 
@@ -108,7 +115,10 @@ static void* thread_start(void *threadArg)
   }
   GET_TIME(end_time);
   total_time = end_time - start_time;
-  timeArray[requestArgs->current_request.pos] = total_time;
+  pthread_mutex_lock(&time_mutex);
+  timeArray[timeArrayIndex] = total_time;
+  timeArrayIndex++;
+  pthread_mutex_unlock(&time_mutex);
   pthread_mutex_unlock(&mutexes[requestArgs->current_request.pos]);
 
   free(requestArgs);
