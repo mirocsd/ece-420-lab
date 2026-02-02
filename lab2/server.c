@@ -53,14 +53,13 @@ int main(int argc, char **argv) {
 
   mutexes = malloc(num_positions * sizeof(pthread_mutex_t));
 
-  for (int i = 0; i < COM_NUM_REQUEST; i++)
+  for (int i = 0; i < num_positions; i++)
     pthread_mutex_init(&(mutexes[i]), NULL);
 
   /* process server requests, update linked list, notify threads that work is ready */
   sock_var.sin_addr.s_addr = inet_addr(server_ip);
   sock_var.sin_port=(int)server_port;
   sock_var.sin_family=AF_INET;
-  threadArgs thisArg;
   if (bind(serverfd, (struct sockaddr*)&sock_var, sizeof(sock_var)) >= 0)
   {
     listen(serverfd, 2000);
@@ -71,13 +70,19 @@ int main(int argc, char **argv) {
         clientfd[i] = accept(serverfd, NULL, NULL);
         read(clientfd[i], current_line, COM_BUFF_SIZE);
         ParseMsg(current_line, &current_request);
-        
-        thisArg.current_request = current_request;
-        thisArg.clientfd = clientfd[i];
-
-        pthread_create(&threads[i], NULL, thread_start, (void*)&thisArg);
+        threadArgs *arg = (threadArgs*)malloc(sizeof(threadArgs));
+        if (arg == NULL)          
+          continue;
+        arg->current_request = current_request;
+        arg->clientfd = clientfd[i];
+        pthread_create(&threads[i], NULL, thread_start, (void*)arg);
       }
     }
+  }
+  else
+  {
+    printf("Error: Failed to bind socket");
+    return 0;
   }
 
 
@@ -101,6 +106,8 @@ static void* thread_start(void *threadArg)
   }
 
   pthread_mutex_unlock(&mutexes[requestArgs->current_request.pos]);
+
+  free(requestArgs);
 
   return NULL;
 }
