@@ -103,6 +103,8 @@ static void* thread_start(void *threadArg)
   {
     pthread_mutex_lock(&mutexes[requestArgs->current_request.pos]);
     setContent(requestArgs->current_request.msg, requestArgs->current_request.pos, theArray);
+    getContent(result, requestArgs->current_request.pos, theArray);
+    write(requestArgs->clientfd, result, COM_BUFF_SIZE);
   }
 
   pthread_mutex_unlock(&mutexes[requestArgs->current_request.pos]);
