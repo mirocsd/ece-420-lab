@@ -102,6 +102,10 @@ int main(int argc, char **argv) {
 static void* thread_start(void *threadArg)
 {
   threadArgs *requestArgs = (threadArgs*)threadArg;
+  if (requestArgs->clientfd < 0) {
+    free(requestArgs);
+    return NULL;
+  }
   char result[COM_BUFF_SIZE];
   double start_time, end_time, total_time;
   GET_TIME(start_time);
