@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
           continue;
         }
 
-        current_line[size] = '\0';
+        current_line[size-1] = '\0';
 
         if (strchr(current_line, '-') != NULL) {
           if (strchr(current_line, '-') != NULL) {
@@ -118,10 +118,10 @@ int main(int argc, char **argv) {
 
         created[i] = 1;
 
-        if (timeArrayIndex >= COM_NUM_REQUEST) {
-          saveTimes(timeArray, COM_NUM_REQUEST);
-          timeArrayIndex = 0;
-        }
+        //if (timeArrayIndex >= COM_NUM_REQUEST) {
+         // saveTimes(timeArray, COM_NUM_REQUEST);
+         // timeArrayIndex = 0;
+        //}
       }
 
       for (int i = 0; i < COM_NUM_REQUEST; i++) {
@@ -164,8 +164,13 @@ static void* thread_start(void *threadArg)
   GET_TIME(end_time);
   total_time = end_time - start_time;
   pthread_mutex_lock(&time_mutex);
-  timeArray[timeArrayIndex] = total_time;
-  timeArrayIndex++;
+
+  if (timeArrayIndex >= COM_NUM_REQUEST) {
+	saveTimes(timeArray, COM_NUM_REQUEST);
+	timeArrayIndex = 0;
+  }
+
+  timeArray[timeArrayIndex++] = total_time;
   pthread_mutex_unlock(&time_mutex);
   pthread_mutex_unlock(&mutexes[requestArgs->current_request.pos]);
   shutdown(requestArgs->clientfd, SHUT_RDWR);
