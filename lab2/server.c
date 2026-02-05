@@ -82,8 +82,9 @@ int main(int argc, char **argv) {
           created[i] = 0;
           continue;
         }
+
         current_line[size] = '\0';
-        printf("current line %s\n", current_line);
+
         if (strchr(current_line, '-') != NULL) {
           if (strchr(current_line, '-') != NULL) {
             ParseMsg(current_line, &current_request);
