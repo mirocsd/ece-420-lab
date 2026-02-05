@@ -30,6 +30,7 @@ int main(int argc, char **argv) {
   char server_ip[20];
   uint16_t server_port;
   pthread_t threads[COM_NUM_REQUEST];
+  uint8_t created[COM_NUM_REQUEST];
   char initialMessage[30] = "String %d: the initial value";
   struct sockaddr_in sock_var;
   serverfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -67,17 +68,31 @@ int main(int argc, char **argv) {
     listen(serverfd, 2000);
     while (1)
     {
+      for (int i = 0; i < COM_NUM_REQUEST; i++) created[i] = 0;
       for (int i = 0; i < COM_NUM_REQUEST; i++)
       {
         clientfd[i] = accept(serverfd, NULL, NULL);
-        read(clientfd[i], current_line, COM_BUFF_SIZE);
+        ssize_t size = read(clientfd[i], current_line, COM_BUFF_SIZE - 1);
+        if (size <= 0) {
+          close(clientfd[i]);
+          created[i] = 0;
+          continue;
+        }
+        current_line[size] = '\0';
         ParseMsg(current_line, &current_request);
         threadArgs *arg = (threadArgs*)malloc(sizeof(threadArgs));
-        if (arg == NULL)          
+        if (arg == NULL) {
+          created[i] = 0;
           continue;
+        }
         arg->current_request = current_request;
         arg->clientfd = clientfd[i];
-        pthread_create(&threads[i], NULL, thread_start, (void*)arg);
+        int status = pthread_create(&threads[i], NULL, thread_start, (void*)arg);
+        if (status != 0) {
+          created[i] = 0;
+        } else {
+          created[i] = 1;
+        }
 
         if (timeArrayIndex >= COM_NUM_REQUEST) {
           saveTimes(timeArray, COM_NUM_REQUEST);
@@ -86,7 +101,7 @@ int main(int argc, char **argv) {
       }
 
       for (int i = 0; i < COM_NUM_REQUEST; i++) {
-        pthread_join(threads[i], NULL);
+        if (created[i]) pthread_join(threads[i], NULL);
       } 
     }
   }
