@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <pthread.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -35,6 +36,7 @@ int main(int argc, char **argv) {
   serverfd = socket(AF_INET, SOCK_STREAM, 0);
   char current_line[COM_BUFF_SIZE];
   ClientRequest current_request;
+  uint8_t created[COM_NUM_REQUEST] = {0};
 
   if (argc != 4) {
     printf("Error: Not enough input arguments");
@@ -67,17 +69,53 @@ int main(int argc, char **argv) {
     listen(serverfd, 2000);
     while (1)
     {
+      for (int i = 0; i < COM_NUM_REQUEST; i++) created[i] = 0;
+
       for (int i = 0; i < COM_NUM_REQUEST; i++)
       {
         clientfd[i] = accept(serverfd, NULL, NULL);
-        read(clientfd[i], current_line, COM_BUFF_SIZE);
-        ParseMsg(current_line, &current_request);
-        threadArgs *arg = (threadArgs*)malloc(sizeof(threadArgs));
-        if (arg == NULL)          
+        if (clientfd[i] < 0) { created[i] = 0; continue; }
+
+        ssize_t size = read(clientfd[i], current_line, COM_BUFF_SIZE);
+        if (size <= 0) {
+          close(clientfd[i]);
+          created[i] = 0;
           continue;
+        }
+        current_line[size] = '\0';
+        printf("current line %s\n", current_line);
+        if (strchr(current_line, '-') != NULL) {
+          if (strchr(current_line, '-') != NULL) {
+            ParseMsg(current_line, &current_request);
+          }
+          else {
+            close(clientfd[i]);
+            created[i] = 0;
+            continue;
+          }
+        }
+        else {
+          close(clientfd[i]);
+          created[i] = 0;
+          continue;
+        }
+        threadArgs *arg = (threadArgs*)malloc(sizeof(threadArgs));
+        if (arg == NULL) {
+          close(clientfd[i]);
+          created[i] = 0;
+          continue;
+        }
         arg->current_request = current_request;
         arg->clientfd = clientfd[i];
-        pthread_create(&threads[i], NULL, thread_start, (void*)arg);
+        int status = pthread_create(&threads[i], NULL, thread_start, (void*)arg);
+        if (status != 0) {
+          free(arg);
+          close(clientfd[i]);
+          created[i] = 0;
+          continue;
+        }
+
+        created[i] = 1;
 
         if (timeArrayIndex >= COM_NUM_REQUEST) {
           saveTimes(timeArray, COM_NUM_REQUEST);
@@ -86,7 +124,7 @@ int main(int argc, char **argv) {
       }
 
       for (int i = 0; i < COM_NUM_REQUEST; i++) {
-        pthread_join(threads[i], NULL);
+        if (created[i]) pthread_join(threads[i], NULL);
       } 
     }
   }
@@ -129,7 +167,8 @@ static void* thread_start(void *threadArg)
   timeArrayIndex++;
   pthread_mutex_unlock(&time_mutex);
   pthread_mutex_unlock(&mutexes[requestArgs->current_request.pos]);
-
+  shutdown(requestArgs->clientfd, SHUT_RDWR);
+  close(requestArgs->clientfd);
   free(requestArgs);
 
   return NULL;
