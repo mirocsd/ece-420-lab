@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
             #pragma omp for schedule(dynamic)
             for (int i = k + 1; i < n; i++) {
                 double temp = A[i][k] / A[k][k];
-                for (int j = k; j <= n; j++) {
+                for (int j = k + 1; j <= n; j++) {
                     A[i][j] -= temp * A[k][j];
                 }
             }
@@ -56,11 +56,12 @@ int main(int argc, char *argv[]) {
         }
 
         for (int k = n - 1; k >= 1; k--) {
+            double pivot = 1.0 / A[k][k];
             #pragma omp for schedule(dynamic)
             for (int i = 0; i < k; i++) {
-                double factor = A[i][k] / A[k][k];
+                double factor = A[i][k] * pivot;
                 A[i][n] -= factor * A[k][n];
-                A[i][k] = 0.0;
+                // A[i][k] = 0.0;
             }
         }
 
