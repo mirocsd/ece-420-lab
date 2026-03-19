@@ -14,6 +14,8 @@
 #define EPSILON 0.00001
 #define DAMPING_FACTOR 0.85
 
+static const double epsilon_sq = EPSILON * EPSILON;
+
 int main (int argc, char* argv[]){
     // instantiate variables
     struct node *nodehead;
@@ -55,39 +57,44 @@ int main (int argc, char* argv[]){
         counts[i] = nodecount / numtasks + (i < nodecount % numtasks ? 1 : 0);
         displs[i] = i * (nodecount / numtasks) + (i < nodecount % numtasks ? i : nodecount % numtasks);
     }
-    double *r_local = malloc((local_end - local_start) * sizeof(double));
+    double local_sums[2], global_sums[2];
 
-    double local_diff2, local_norm2, gdiff2, gnorm2;
-
+    double base_rank = (1.0 - DAMPING_FACTOR) / nodecount;
+    double *inv_out = malloc(nodecount * sizeof(double));
+    for (i = 0; i < nodecount; ++i)
+        inv_out[i] = 1.0 / nodehead[i].num_out_links;
+    
     GET_TIME(start);
     // core calculation
     do {
-        ++iterationcount;
-        for (i = local_start; i < local_end; ++i) r_pre[i] = r[i];
-        for (i = local_start; i < local_end; ++i) r[i] = 0.0;
-        for (i = local_start; i < local_end; ++i){
-            for (j = 0; j < nodehead[i].num_in_links; ++j){
-                r[i] += r_pre[nodehead[i].inlinks[j]] / nodehead[nodehead[i].inlinks[j]].num_out_links;
+        iterationcount++;
+        for (i = 0; i < nodecount; ++i) r_pre[i] = r[i];
+        for (i = local_start; i < local_end; ++i) {
+            struct node *ni = &nodehead[i];
+            int num_in = ni->num_in_links;
+            int *inlinks = ni->inlinks;
+            double sum = 0.0;
+            for (j = 0; j < num_in; ++j) {
+                int src = inlinks[j];
+                sum += r_pre[src] * inv_out[src];
             }
-            r[i] = DAMPING_FACTOR * r[i] + (1 - DAMPING_FACTOR) / nodecount;
+            r[i] = DAMPING_FACTOR * sum + base_rank;
         }
 
-        for (i = local_start; i < local_end; ++i) r_local[i - local_start] = r[i];
-        MPI_Allgatherv(r_local, local_end - local_start, MPI_DOUBLE,
+        MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL,
                        r, counts, displs, MPI_DOUBLE, MPI_COMM_WORLD);
 
-        local_diff2 = 0.0; local_norm2 = 0.0;
+        local_sums[0] = 0.0; local_sums[1] = 0.0;
         for (i = local_start; i < local_end; ++i) {
             double d = r[i] - r_pre[i];
-            local_diff2 += d * d;
-            local_norm2 += r_pre[i] * r_pre[i];
+            local_sums[0] += d * d;
+            local_sums[1] += r_pre[i] * r_pre[i];
         }
-        MPI_Allreduce(&local_diff2, &gdiff2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-        MPI_Allreduce(&local_norm2, &gnorm2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    } while(sqrt(gdiff2 / gnorm2) >= EPSILON);
+        MPI_Allreduce(local_sums, global_sums, 2, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    } while(global_sums[0] / global_sums[1] >= epsilon_sq);
     GET_TIME(end);
 
-    free(counts); free(displs); free(r_local);
+    free(counts); free(displs); free(inv_out);
 
     if (rank == 0) {
         Lab4_saveoutput(r, nodecount, end - start);
