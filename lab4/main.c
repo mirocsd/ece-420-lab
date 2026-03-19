@@ -48,11 +48,21 @@ int main (int argc, char* argv[]){
         r[i] = 1.0 / nodecount;
     /* INITIALIZE MORE VARIABLES IF NECESSARY */
 
+
     GET_TIME(start);
     // core calculation
     do{
         ++iterationcount;
         /* IMPLEMENT ITERATIVE UPDATE */
+        vec_cp(r, r_pre, nodecount);
+
+        for (i = 0; i < nodecount; ++i){
+            r[i] = 0.0;
+            for (j = 0; j < nodehead[i].num_in_links; ++j){
+                r[i] += r_pre[nodehead[i].inlinks[j]] / nodehead[nodehead[i].inlinks[j]].num_out_links;
+            }
+            r[i] = DAMPING_FACTOR * r[i] + (1 - DAMPING_FACTOR) / nodecount;
+        }
 
     }while(rel_error(r, r_pre, nodecount) >= EPSILON);
     GET_TIME(end);
