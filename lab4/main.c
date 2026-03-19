@@ -4,6 +4,7 @@
 
 #define LAB4_EXTEND
 
+#include "mpi.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -23,6 +24,10 @@ int main (int argc, char* argv[]){
     double start, end;
     FILE *ip;
     /* INSTANTIATE MORE VARIABLES IF NECESSARY */
+    int numtasks, rank;
+    MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &numtasks);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     
     // load data 
@@ -43,17 +48,21 @@ int main (int argc, char* argv[]){
         r[i] = 1.0 / nodecount;
     /* INITIALIZE MORE VARIABLES IF NECESSARY */
 
+    GET_TIME(start);
     // core calculation
     do{
         ++iterationcount;
         /* IMPLEMENT ITERATIVE UPDATE */
 
     }while(rel_error(r, r_pre, nodecount) >= EPSILON);
+    GET_TIME(end);
 
     Lab4_saveoutput(r, nodecount, end - start);
 
     // post processing
     node_destroy(nodehead, nodecount);
-    free(r); free(r_pre);
+    free(r); 
+    free(r_pre);
+    MPI_Finalize();
     return 0;
 }
